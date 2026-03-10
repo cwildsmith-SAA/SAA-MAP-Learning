@@ -1,0 +1,784 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MAP Score Mastery – Professional Learning for Educators</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.23.2/babel.min.js"></script>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { background: #0c0e15; color: #e5e7eb; font-family: Georgia, serif; }
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: #0c0e15; }
+    ::-webkit-scrollbar-thumb { background: #1f2937; border-radius: 3px; }
+    button { cursor: pointer; }
+    button:hover { opacity: 0.85; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="text/babel">
+const { useState, useEffect, useRef } = React;
+
+
+const modules = [
+  {
+    id: "overview", icon: "🗺️", title: "Understanding MAP Testing", subtitle: "Foundations of NWEA MAP", color: "#1a6b5a", accent: "#2dd4a7",
+    lessons: [
+      { title: "What is MAP Growth?", visual: "adaptive", content: `MAP Growth (Measures of Academic Progress) is an adaptive assessment developed by NWEA. Unlike traditional tests, MAP adapts in real time — if a student answers correctly, the next question is harder; if incorrectly, it becomes easier.
+
+**Key Characteristics:**
+• **Adaptive**: Questions adjust to student performance in real time
+• **Norm-referenced**: Results compared to a national sample of ~11 million students
+• **Seasonal**: Typically administered Fall, Winter, and Spring
+• **Subjects**: Reading, Mathematics, Language Usage, and Science
+
+**Why it matters:** MAP measures both achievement (where a student is) AND growth (how much they've learned), making it a powerful tool for instructional planning.` },
+      { title: "The RIT Scale Explained", visual: "ritscale", content: `The **RIT (Rasch UnIT) scale** is a stable, equal-interval scale ranging roughly from 100–350. A student's RIT score represents their current level of achievement.
+
+**Key facts about RIT scores:**
+• **Equal intervals**: A 10-point difference means the same thing at any point on the scale
+• **Continuous**: Students use the same scale from Kindergarten through Grade 12
+• **Typical ranges by grade** (50th percentile, approximate):
+• Kindergarten: ~148 | Grade 3: ~204 | Grade 5: ~220 | Grade 8: ~230 | Grade 10: ~238
+
+**Important:** RIT scores are NOT percentages. A score of 220 does NOT mean 220 out of 300.` },
+      { title: "Norming & Percentiles", visual: "bell", content: `NWEA regularly updates its norms using a large, nationally representative sample. Norms tell us how a student's score compares to other students in the same grade and testing season.
+
+**Percentile Rank**: Shows what percentage of same-grade peers scored at or below a student's RIT score.
+• 50th percentile = average performance for that grade
+• 75th percentile = performing above 75% of same-grade peers
+• 90th percentile = performing above 90% of same-grade peers
+
+**Lexile & Quantile Links**: MAP scores can be cross-referenced with Lexile (reading) and Quantile (math) measures to find appropriately leveled resources.
+
+**Caution:** Percentile ranks shift slightly with each norming update. Always use the current norms document when interpreting scores.` },
+    ],
+  },
+  {
+    id: "reports", icon: "📊", title: "Reading Score Reports", subtitle: "Navigating the Data", color: "#2563a8", accent: "#60a5fa",
+    lessons: [
+      { title: "Individual Student Report", visual: "studentreport", content: `The **Individual Student Profile** is your window into one student's performance. Here's what to look for:
+
+**Key Data Points:**
+• **RIT Score**: Current achievement level
+• **Standard Error (SE)**: Margin of error — typically ±3 points. The student's "true" score falls within RIT ± SE
+• **Percentile Rank**: Compared to national norms
+• **Lexile/Quantile Range**: For matched resources
+
+**Goal Area Breakdown**: Below the overall RIT, you'll see sub-scores for each goal area (e.g., in Reading: Literary Text, Informational Text, Vocabulary). These reveal strengths and gaps within the subject.
+
+**Growth**: Compare Fall → Winter → Spring RIT scores. Look at whether the student met their projected growth target.` },
+      { title: "Class & Grade Reports", visual: "classreport", content: `Class-level reports help you see patterns across your whole group and identify clusters of students with similar needs.
+
+**Class Overview Report:**
+• Distribution of RIT scores (histogram or list)
+• Average RIT vs. national average for that grade/season
+• Percentage meeting or exceeding projected growth
+
+**Instructional Grouping Suggestions:**
+NWEA provides suggested instructional ranges. Students within ~5 RIT points of each other have overlapping instructional needs.
+
+**What to look for:**
+• **Bimodal distribution**: Two clusters may indicate two very different instructional groups
+• **High variance**: Wide spread = need for significant differentiation
+• **Above-grade clusters**: Students needing enrichment or acceleration` },
+      { title: "Growth Reports", visual: "growth", content: `Growth data shows how much a student has learned over a period — and whether it was enough.
+
+**Conditional Growth Percentile (CGP)**: How a student's actual growth compares to peers who started at the same RIT. A CGP of 50 = average growth; 75 = grew more than 75% of similar peers.
+
+**Projected vs. Actual Growth:**
+• NWEA provides a growth projection for each student based on their starting score, grade, and season
+• Comparing projected to actual shows whether instruction is working
+
+**Growth-Achievement Matrix:**
+• High Achievement + High Growth → Thriving
+• High Achievement + Low Growth → Coasting (very common in gifted populations — and often missed)
+• Low Achievement + High Growth → Catching Up
+• Low Achievement + Low Growth → Falling Behind` },
+    ],
+  },
+  {
+    id: "goalarea", icon: "🎯", title: "Goal Areas & Sub-Scores", subtitle: "Diagnostic Depth", color: "#7c3aed", accent: "#c084fc",
+    lessons: [
+      { title: "Reading Goal Areas", visual: "goalreading", content: `MAP Reading breaks into **Goal Areas** that align with Common Core and other standards. Understanding these sub-scores pinpoints exactly where students need support.
+
+**Reading Goal Areas:**
+• **Literary Text**: Analyzing fiction, poetry, drama — character, theme, plot, structure
+• **Informational Text**: Nonfiction comprehension — main idea, text structure, author's purpose
+• **Vocabulary**: Understanding words in context, figurative language, academic vocabulary
+• **Foundational Skills** (K-2): Print concepts, phonological awareness, phonics, fluency
+
+**Interpreting sub-scores:**
+• Sub-scores have a larger standard error than the overall score
+• Look for patterns: Is a student consistently low in Vocabulary? That's an instructional target.
+• A student can have a high overall RIT but a relative weakness in a goal area — still worth addressing.` },
+      { title: "Math Goal Areas", visual: "goalmath", content: `MAP Math goal areas align with mathematical practice domains. Drilling into these reveals specific skill gaps.
+
+**Math Goal Areas:**
+• **Operations & Algebraic Thinking**: Number operations, patterns, equations
+• **Numbers & Operations**: Place value, fractions, decimals, ratios
+• **Measurement & Data**: Measurement tools, data interpretation, statistics
+• **Geometry**: Shapes, spatial reasoning, coordinate planes
+
+**For older students (6-10):**
+• **Functions**: Linear, non-linear, domain/range
+• **Statistics & Probability**: Data analysis, probability concepts
+
+**Actionable Use:**
+If a 5th grader has an overall Math RIT of 240 but a lower sub-score in Geometry, you know exactly where to target enrichment — even within a gifted profile.` },
+      { title: "Using the Learning Continuum", visual: "continuum", content: `The **NWEA Learning Continuum** is one of the most powerful — and underused — tools available. It maps RIT scores to specific skills and concepts students are ready to learn.
+
+**How to Use It:**
+1. Find a student's RIT score (or a group's range)
+2. Look up that range in the Learning Continuum
+3. See the skills students are **likely to know** and **ready to learn next**
+4. Use those skill descriptors to select targeted practice resources and write lesson plans
+
+**For Gifted Learners:** Look up RIT ranges 2–3 grade levels above the student's current grade. This reveals the specific advanced skills they are ready to tackle — making the Continuum your primary acceleration planning tool.
+
+**Pro Tip:** Print the Continuum for your class's actual RIT range (not grade level) and highlight what students already know vs. what they're ready to learn next.` },
+    ],
+  },
+  {
+    id: "differentiation", icon: "✏️", title: "Differentiated Instruction", subtitle: "Turning Data into Action", color: "#b45309", accent: "#fbbf24",
+    lessons: [
+      { title: "Forming Flexible Groups", visual: "groups", content: `MAP data is ideal for forming **flexible, data-driven small groups** — not permanent ability tracks, but temporary groupings around specific skills.
+
+**Step-by-Step Grouping Process:**
+1. **Pull your Class Breakdown report** — sort by RIT score
+2. **Identify natural clusters** — groups of students within ~5 RIT points
+3. **Cross-reference goal areas** — do students in the same RIT range share the same weakness?
+4. **Form your groups** — 3–5 students per group works well
+5. **Plan targeted instruction** — use the Learning Continuum to match skills to each group
+6. **Reassess and regroup** — after 4–6 weeks, re-examine data
+
+**Flexible grouping principles:**
+• Groups change based on skill — a student might be in different groups for Reading vs. Math
+• Use grouping for small-group instruction, NOT for permanent labeling
+• Communicate growth focus to students and families` },
+      { title: "Tiered Assignments", visual: "tiered", content: `Use RIT ranges to **tier the same core assignment** so all students work on the same essential question but at an appropriate level of complexity.
+
+**Example: A fiction analysis lesson**
+• **Tier 1 (Support)**: Sentence frames, graphic organizers, shorter text with same theme
+• **Tier 2 (On Grade)**: Standard task with grade-level text
+• **Tier 3 (Enrichment)**: Extended analysis, compare/contrast two texts, independent extension
+
+**Key Principles:**
+• All tiers address the SAME learning objective — complexity differs, not the concept
+• Avoid giving students more/less work — give different depth
+• Never make enrichment feel like punishment (no "more worksheets")
+• Rotate materials so students know tiers can change` },
+      { title: "Targeted Intervention & Enrichment", visual: "intervention", content: `MAP data helps you identify students who need **intensive support** or **accelerated challenge** — and gives you the RIT-based precision to act on it.
+
+**For Students Needing Enrichment:**
+• Students 15+ points above grade-level norms need challenge, not more of the same
+• Use their RIT to find next-grade-level skills they're ready for
+• Consider compacting curriculum — they may not need the full unit
+• Extension options: independent research, above-grade texts, mentorship
+
+**Communication Tips:**
+• Share specific RIT-based language with parents: "Your child is reading at a level typical for a mid-6th grader; our goal this year is to reach mid-7th grade level."
+• Use growth charts to show progress over time, not just current score` },
+    ],
+  },
+  {
+    id: "gifted", icon: "⭐", title: "Gifted Learners & the 90th+ Classroom", subtitle: "Advanced Differentiation Strategies", color: "#0e3d6b", accent: "#38bdf8", badge: "YOUR SCHOOL",
+    lessons: [
+      { title: "Reading MAP Data in a Gifted Context", visual: "giftedoverview", content: `When every student in your classroom scores at the **90th percentile or above**, traditional MAP interpretation needs to be reframed entirely. The question is no longer "Is this student on grade level?" — they all are, and well beyond it. The real question becomes: **"How do I measure and promote meaningful growth for students who already exceed grade-level expectations?"**
+
+**Reframing Your Lens:**
+• **Percentile rank becomes less useful**: When all students are 90th+, national norms don't meaningfully differentiate your class
+• **RIT score is your true anchor**: Focus on absolute RIT values and growth across seasons, not grade-level benchmarks
+• **Ceiling effect is a real risk**: If gifted students are not growing, it means instruction isn't stretching them — not that they've "maxed out"
+
+**The "Coasting" Problem:**
+High achievement + low growth is one of the most common and overlooked problems in gifted classrooms. A student scoring at the 97th percentile who shows zero RIT growth has not been adequately challenged. MAP data makes this visible — and actionable.
+
+**Your New North Star:**
+The national average is irrelevant as a target for your students. Your benchmark is each student's own prior RIT score. Growth of 3–5 RIT points per year is still expected — even at the 95th percentile.` },
+      { title: "Subject Acceleration Using RIT Scores", visual: "acceleration", content: `RIT scores allow you to make **evidence-based decisions about subject-specific acceleration** — one of the most powerful tools available for gifted learners.
+
+**What is Subject Acceleration?**
+Placing a student in above-grade-level content for a specific subject where their RIT score already exceeds the norm for older grades.
+
+**How to Identify Candidates:**
+• Pull the student's RIT and compare it to NWEA norms for grades 1–3 above their current grade
+• If a 4th grader's Math RIT (e.g., 241) equals or exceeds the 50th percentile for 7th graders → strong acceleration candidate
+• Cross-reference with goal area sub-scores to confirm readiness across all domains, not just overall RIT
+
+**Types of Acceleration:**
+• **Curriculum Compacting**: Pre-assess a unit; if mastery is demonstrated, replace with above-grade content
+• **Single-Subject Acceleration**: Student attends a higher grade for that subject only
+• **Above-Grade Materials**: Student stays in classroom but works from next-grade curriculum
+• **Telescoping**: Completing two years of content in one year, using MAP growth data to set pacing
+
+**Important Note:**
+Acceleration decisions should combine MAP data with other evidence — teacher observation, student readiness, and social-emotional factors. MAP is the "what"; professional judgment is the "how."` },
+      { title: "Differentiation Within a Gifted Cohort", visual: "giftedspread", content: `Even within a high-achieving school, **gifted students are not a monolith**. A classroom where everyone scores 90th+ still contains a meaningful RIT spread that demands differentiation.
+
+**Understanding the Spread:**
+• 90th percentile for a 5th grader ≈ RIT 233
+• 99th percentile for a 5th grader ≈ RIT 248+
+• That's a 15-point spread — equivalent to the difference between a 3rd and 5th grader nationally
+
+**Differentiating Within Your Gifted Classroom:**
+• **Use RIT sub-bands**: Even within your high-performing cohort, group students within 4–5 RIT points for targeted instruction
+• **Asynchronous development**: A student may be at the 99th percentile in Reading but "only" the 90th in Math — differentiate by subject, not by overall label
+• **Goal area targeting**: Use sub-scores to identify which students need depth vs. breadth challenges in each domain
+
+**The Gifted Outlier:**
+In most classrooms, the highest-scoring students score 8–10+ points above their classmates. These students may need individualized learning plans, mentor connections, or university-level resources. MAP data is your documentation tool for advocating for these extraordinary placements.` },
+      { title: "Depth, Complexity & Curriculum Compacting", visual: "depthcomplexity", content: `For gifted learners at the 90th percentile and above, **depth and complexity** — not just harder content — is the gold standard of differentiation.
+
+**Curriculum Compacting (The MAP Way):**
+1. **Pre-assess** using MAP goal area sub-scores before a unit begins
+2. **If a student already scores at or above** the expected end-of-unit RIT → they have likely mastered those skills
+3. **Compact** the standard unit: replace repeated practice with authentic extension work
+4. **Document** the compacting decision using MAP data — powerful for Advanced Learning Plan records
+
+**Depth Over Mere Acceleration:**
+Sometimes going deeper into grade-level content is more appropriate than racing ahead. Strategies include:
+• **Socratic Seminars**: Use complex texts matched to students' actual Lexile — not just their grade level
+• **Inquiry-Based Projects**: Students design their own questions within a domain
+• **Cross-disciplinary Connections**: Linking math reasoning to historical analysis, science data to literary themes
+• **Philosophical Exploration**: Ethical dilemmas, abstract thinking, hypothetical scenarios
+
+**Complexity Frameworks to Layer In:**
+• **Bloom's Taxonomy**: Push gifted learners to evaluate, synthesize, and create — not just recall or apply
+• **Kaplan's Depth & Complexity Icons**: Language of the Discipline, Big Ideas, Unanswered Questions, Ethics
+• **Paul's Elements of Reasoning**: Used for advanced critical thinking across any subject area` },
+      { title: "Growth Goals & Progress Monitoring", visual: "giftedgrowth", content: `For gifted students, setting and monitoring **meaningful growth goals** requires a different framework than standard MAP benchmarks.
+
+**Why Standard Benchmarks Fall Short:**
+NWEA's default growth projections are designed for typical students across all percentile levels. For students already at the 90th+ percentile, projected growth norms are actually lower due to regression toward the mean. This can create a false sense that "any growth is enough."
+
+**Setting Ambitious Growth Goals:**
+• **Do not use grade-level norms as targets** — use the student's own prior RIT + expected seasonal growth
+• For a student at RIT 240, target RIT 244–246 by next testing season
+• For your highest scorers (95th–99th percentile), even 2–3 RIT points of growth per year reflects successful instruction
+• For students showing flat or declining RIT scores, treat it as an instructional urgency — gifted students can and do regress when underchallenged
+
+**Progress Monitoring Between MAP Windows:**
+• Use **DesCartes** (NWEA's skill framework) to track mastery of specific skills between testing seasons
+• Formative assessments aligned to above-grade standards provide interim data
+• Student goal-setting conversations using their own RIT timeline build metacognitive awareness
+
+**Communicating Growth to Families:**
+Gifted families often ask "what grade level" their child is at. Reframe this: share the RIT score, its grade-level equivalent, AND the growth goal. Celebrate growth — not just the high score.` },
+      { title: "Resources & Tools for Gifted Instruction", visual: "resources", content: `Translating MAP data into gifted instruction requires resources that match the sophistication of your students. Here is a curated toolkit organized by purpose.
+
+**Finding Above-Grade Content Using RIT:**
+• **NWEA Learning Continuum**: Look up RIT ranges 2–4 grade levels above current grade for instructional targets
+• **DesCartes**: Download the subject-specific DesCartes document and use the RIT band 2–3 grades up
+• **Lexile Framework**: Use the student's MAP Reading Lexile to find texts at the high end of their band or slightly above
+
+**Curriculum Resources by Subject:**
+• **Reading/ELA**: Junior Great Books, William & Mary Language Arts, Socratic Seminars International
+• **Math**: Art of Problem Solving (AoPS), MATHCOUNTS, Beast Academy (grades 2–5), Alcumus platform
+• **Science**: Science Olympiad resources, STEM challenge banks, National Science Bowl prep
+• **Social Studies/Humanities**: Facing History and Ourselves, Library of Congress Primary Sources
+
+**Assessment & Documentation Tools:**
+• Pre/post assessments aligned to above-grade standards (for compacting documentation)
+• Student growth portfolios with RIT timeline charts
+• Advanced Learning Plan (ALP) templates referencing MAP data as baseline evidence
+
+**Enrichment Platforms (RIT-matched):**
+• **Khan Academy**: Use the grade-level selector to assign 2–3 grades above current grade
+• **IXL**: Filter by skill level above grade; use MAP score to identify specific skill strands
+• **Newsela**: Set Lexile above grade level based on MAP Reading score
+• **Art of Problem Solving**: Ideal for students 95th+ in Math — competition-level problem solving` },
+    ],
+  },
+  {
+    id: "practice", icon: "🧪", title: "Practice Scenarios", subtitle: "Apply What You've Learned", color: "#be185d", accent: "#f472b6",
+    lessons: [], isQuiz: true,
+  },
+];
+
+const quizQuestions = [
+  { q: "A student has a Reading RIT score of 215 with a Standard Error (SE) of 3. What does this mean?", options: ["The student answered 215 out of 300 questions correctly", "The student's true score likely falls between 212 and 218", "The student is in the 21st percentile", "The student made 3 errors on the test"], answer: 1, explanation: "Standard Error (SE) represents the margin of measurement error. A score of 215 ± 3 means the student's 'true' score most likely falls between 212 and 218. RIT scores are not percentages or raw scores." },
+  { q: "At your school, every student scores 90th percentile or above. A 5th grader has a Math RIT of 241. What is the most useful next step?", options: ["Celebrate — they've exceeded grade level, no further action needed", "Compare their RIT to NWEA norms for 7th grade to assess acceleration readiness", "Place them in the lowest instructional group since the class average is very high", "Wait until next year's MAP test to see if they grow"], answer: 1, explanation: "For gifted students, grade-level norms are irrelevant targets. Comparing a student's RIT to norms for higher grades helps identify subject acceleration opportunities. A 5th grader with RIT 241 may already perform at 7th grade level — that's actionable data." },
+  { q: "A student at your school scores at the 97th percentile in Fall and again at the 97th percentile in Spring — same percentile, no change. What does this most likely indicate?", options: ["The student is performing perfectly — maintaining 97th percentile is excellent", "The student may not have been sufficiently challenged — flat RIT growth suggests a 'coasting' pattern", "The MAP test is unreliable for high-achieving students", "The student needs to be retained"], answer: 1, explanation: "Maintaining a percentile rank does NOT mean adequate growth. Gifted students who score the same RIT across seasons have likely not grown — they've simply kept pace with peers who also grew. In a school of gifted learners, flat RIT is a red flag that instruction isn't stretching the student." },
+  { q: "You want to compact curriculum for a gifted 3rd grader before a fractions unit. Which MAP-based approach is most appropriate?", options: ["Skip all fractions instruction — they're gifted so they know it", "Use the student's Numbers & Operations goal area sub-score to assess whether they've already mastered unit skills; if so, replace instruction with extension work", "Give them more fraction worksheets to stay busy", "Move them to 5th grade permanently"], answer: 1, explanation: "Curriculum compacting should be evidence-based. Using the MAP goal area sub-score — not just overall RIT — shows whether a student has mastered the specific skills in an upcoming unit. This data becomes documentation for the compacting decision." },
+  { q: "Within your gifted school, a 4th grader scores RIT 234 in Reading and RIT 219 in Math. Both are above the national 90th percentile for grade 4, but the Reading score is much higher. What is the correct interpretation?", options: ["This student has a math disability and needs special education evaluation", "This student shows asynchronous development — differentiate by subject, not by overall 'gifted' label", "Ignore the Math score since both are above the 90th percentile", "The student only needs gifted services in Reading"], answer: 1, explanation: "Asynchronous development is common in gifted learners. A student can be profoundly advanced in one domain and moderately advanced in another. The correct response is subject-specific differentiation — this student needs different instructional levels in Reading vs. Math." },
+  { q: "A student's Conditional Growth Percentile (CGP) is 72. What does this tell you?", options: ["The student scored in the 72nd percentile nationally", "The student grew more than 72% of students who started at the same RIT", "The student answered 72% of questions correctly", "The student's RIT increased by 72 points"], answer: 1, explanation: "CGP measures growth relative to peers who started at the same RIT score. A CGP of 72 means this student grew more than 72% of similar-starting peers — a strong indicator that instruction is working. This is distinct from achievement percentile." },
+];
+
+// ── Visuals ───────────────────────────────────────────────────────────────────
+
+const V = {
+  adaptive: () => (
+    <div style={{ background: "rgba(255,255,255,0.05)", borderRadius: 12, padding: 18, marginTop: 16 }}>
+      <div style={{ fontSize: 11, color: "#9ca3af", marginBottom: 12, textTransform: "uppercase", letterSpacing: 1, fontFamily: "sans-serif" }}>How MAP Adapts in Real Time</div>
+      <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+        {[["✓", "Correct", "#2dd4a7", "#064e3b"], ["→", "Harder", "#60a5fa", "#1e3a5f"], ["✓", "Correct", "#2dd4a7", "#064e3b"], ["→", "Harder", "#60a5fa", "#1e3a5f"], ["✗", "Incorrect", "#ef4444", "#7f1d1d"], ["→", "Easier", "#a78bfa", "#3b1f6b"]].map(([sym, lbl, fg, bg], i) => (
+          <div key={i} style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 4 }}>
+            <div style={{ width: 44, height: 38, borderRadius: 8, background: bg, border: `2px solid ${fg}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, color: fg }}>{sym}</div>
+            <div style={{ fontSize: 9, color: "#6b7280", fontFamily: "sans-serif" }}>{lbl}</div>
+          </div>
+        ))}
+      </div>
+      <div style={{ fontSize: 11, color: "#6b7280", marginTop: 10, fontFamily: "sans-serif" }}>Score converges on the student's true ability level</div>
+    </div>
+  ),
+  ritscale: () => (
+    <div style={{ background: "rgba(255,255,255,0.05)", borderRadius: 12, padding: 18, marginTop: 16 }}>
+      <div style={{ fontSize: 11, color: "#9ca3af", marginBottom: 14, textTransform: "uppercase", letterSpacing: 1, fontFamily: "sans-serif" }}>RIT Score Ranges by Grade (50th %ile)</div>
+      {[["K", 148, "#4ade80"], ["Gr 2", 175, "#60a5fa"], ["Gr 5", 220, "#a78bfa"], ["Gr 8", 230, "#fb923c"], ["Gr 10", 238, "#f472b6"]].map(([g, r, c]) => (
+        <div key={g} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+          <div style={{ width: 36, fontSize: 11, color: "#9ca3af", textAlign: "right", fontFamily: "sans-serif" }}>{g}</div>
+          <div style={{ flex: 1, background: "rgba(255,255,255,0.05)", borderRadius: 4, height: 22, position: "relative" }}>
+            <div style={{ width: `${((r - 130) / 130) * 100}%`, height: "100%", background: c, borderRadius: 4, opacity: 0.65 }} />
+            <div style={{ position: "absolute", right: 8, top: "50%", transform: "translateY(-50%)", fontSize: 11, color: "#e5e7eb", fontWeight: "bold", fontFamily: "sans-serif" }}>{r}</div>
+          </div>
+        </div>
+      ))}
+    </div>
+  ),
+  bell: () => (
+    <div style={{ background: "rgba(255,255,255,0.05)", borderRadius: 12, padding: 18, marginTop: 16 }}>
+      <div style={{ fontSize: 11, color: "#9ca3af", marginBottom: 12, textTransform: "uppercase", letterSpacing: 1, fontFamily: "sans-serif" }}>Normal Distribution of Scores</div>
+      <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "center", gap: 3, height: 56 }}>
+        {[4, 8, 16, 30, 46, 62, 78, 62, 46, 30, 16, 8, 4].map((h, i) => (
+          <div key={i} style={{ width: 20, height: `${h}%`, background: i >= 10 ? "rgba(56,189,248,0.5)" : i === 6 ? "#60a5fa" : "rgba(96,165,250,0.25)", borderRadius: "3px 3px 0 0" }} />
+        ))}
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", marginTop: 6, fontSize: 10, color: "#6b7280", fontFamily: "sans-serif" }}>
+        <span>1st</span><span>25th</span><span style={{ color: "#60a5fa" }}>50th</span><span>75th</span><span style={{ color: "#38bdf8" }}>90th+</span>
+      </div>
+    </div>
+  ),
+  growth: () => (
+    <div style={{ background: "rgba(255,255,255,0.05)", borderRadius: 12, padding: 18, marginTop: 16 }}>
+      <div style={{ fontSize: 11, color: "#9ca3af", marginBottom: 12, textTransform: "uppercase", letterSpacing: 1, fontFamily: "sans-serif" }}>Growth-Achievement Matrix</div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+        {[{ l: "Coasting ⚠️", d: "High achievement, low growth", bg: "#78350f" }, { l: "Thriving 🌟", d: "High achievement, high growth", bg: "#14532d" }, { l: "Falling Behind 🚨", d: "Low achievement, low growth", bg: "#7f1d1d" }, { l: "Catching Up 📈", d: "Low achievement, high growth", bg: "#1e3a5f" }].map(q => (
+          <div key={q.l} style={{ background: q.bg, borderRadius: 8, padding: 12 }}>
+            <div style={{ fontSize: 11, fontWeight: "bold", color: "#f3f4f6", fontFamily: "sans-serif" }}>{q.l}</div>
+            <div style={{ fontSize: 10, color: "#9ca3af", marginTop: 3, fontFamily: "sans-serif" }}>{q.d}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  ),
+  goalreading: () => (
+    <div style={{ background: "rgba(255,255,255,0.05)", borderRadius: 12, padding: 18, marginTop: 16 }}>
+      <div style={{ fontSize: 11, color: "#9ca3af", marginBottom: 12, textTransform: "uppercase", letterSpacing: 1, fontFamily: "sans-serif" }}>Sample Goal Area Profile</div>
+      {[{ l: "Literary Text", s: 218, c: "#a78bfa" }, { l: "Informational Text", s: 224, c: "#60a5fa" }, { l: "Vocabulary", s: 205, c: "#f472b6", flag: "⚠️ Focus Area" }].map(g => (
+        <div key={g.l} style={{ marginBottom: 12 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, marginBottom: 4, fontFamily: "sans-serif" }}>
+            <span style={{ color: "#e5e7eb" }}>{g.l}</span>
+            <span style={{ color: g.flag ? "#f472b6" : "#9ca3af" }}>{g.flag || `RIT ${g.s}`}</span>
+          </div>
+          <div style={{ background: "rgba(255,255,255,0.08)", borderRadius: 4, height: 10 }}>
+            <div style={{ width: `${(g.s / 250) * 100}%`, background: g.c, height: "100%", borderRadius: 4 }} />
+          </div>
+        </div>
+      ))}
+    </div>
+  ),
+  groups: () => (
+    <div style={{ background: "rgba(255,255,255,0.05)", borderRadius: 12, padding: 18, marginTop: 16 }}>
+      <div style={{ fontSize: 11, color: "#9ca3af", marginBottom: 12, textTransform: "uppercase", letterSpacing: 1, fontFamily: "sans-serif" }}>Sample Instructional Groups</div>
+      {[{ n: "Group A — Support", s: ["Marcus (198)", "Lena (201)", "Dev (203)"], bg: "#7f1d1d", bd: "#ef4444" }, { n: "Group B — On Grade", s: ["Sam (215)", "Priya (218)", "Tom (220)"], bg: "#1e3a5f", bd: "#60a5fa" }, { n: "Group C — Enrichment", s: ["Zara (232)", "Elise (235)"], bg: "#14532d", bd: "#4ade80" }].map(g => (
+        <div key={g.n} style={{ background: g.bg, border: `1px solid ${g.bd}`, borderRadius: 8, padding: 10, marginBottom: 8 }}>
+          <div style={{ fontSize: 11, fontWeight: "bold", color: "#f3f4f6", marginBottom: 6, fontFamily: "sans-serif" }}>{g.n}</div>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>{g.s.map(s => <span key={s} style={{ background: "rgba(255,255,255,0.1)", padding: "2px 8px", borderRadius: 10, fontSize: 10, color: "#d1d5db", fontFamily: "sans-serif" }}>{s}</span>)}</div>
+        </div>
+      ))}
+    </div>
+  ),
+  giftedoverview: () => (
+    <div style={{ background: "rgba(56,189,248,0.06)", border: "1px solid rgba(56,189,248,0.18)", borderRadius: 12, padding: 18, marginTop: 16 }}>
+      <div style={{ fontSize: 11, color: "#38bdf8", marginBottom: 14, textTransform: "uppercase", letterSpacing: 1, fontFamily: "sans-serif" }}>Your School vs. National Distribution</div>
+      <div style={{ display: "flex", alignItems: "flex-end", gap: 2, height: 64, marginBottom: 6 }}>
+        {[4, 8, 14, 26, 42, 58, 72, 58, 42, 26, 14, 8, 4].map((h, i) => (
+          <div key={i} style={{ flex: 1, height: `${h}%`, background: i >= 9 ? "rgba(56,189,248,0.55)" : "rgba(255,255,255,0.08)", borderRadius: "2px 2px 0 0", position: "relative" }}>
+            {i === 11 && <div style={{ position: "absolute", top: -18, left: "50%", transform: "translateX(-50%)", fontSize: 8, color: "#38bdf8", whiteSpace: "nowrap", fontFamily: "sans-serif" }}>Your school →</div>}
+          </div>
+        ))}
+      </div>
+      <div style={{ display: "flex", justifyContent: "space-between", fontSize: 9, color: "#6b7280", fontFamily: "sans-serif", marginBottom: 14 }}>
+        <span>1st</span><span>25th</span><span>50th</span><span style={{ color: "#38bdf8", fontWeight: "bold" }}>90th+</span>
+      </div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+        {[{ v: "240+", l: "Typical Gr 5 RIT\nat your school", c: "#38bdf8" }, { v: "≠ 0", l: "Expected growth\neven at 97th %ile", c: "#fbbf24" }, { v: "RIT", l: "Your true\ninstructional anchor", c: "#4ade80" }].map(s => (
+          <div key={s.v} style={{ background: "rgba(255,255,255,0.04)", borderRadius: 8, padding: 10, textAlign: "center" }}>
+            <div style={{ fontSize: 20, fontWeight: "bold", color: s.c, fontFamily: "sans-serif" }}>{s.v}</div>
+            <div style={{ fontSize: 9, color: "#6b7280", marginTop: 4, fontFamily: "sans-serif", lineHeight: 1.4, whiteSpace: "pre-line" }}>{s.l}</div>
+          </div>
+        ))}
+      </div>
+    </div>
+  ),
+  acceleration: () => {
+    const grades = [{ g: "Gr 4", p50: 214, p90: 229 }, { g: "Gr 5", p50: 220, p90: 235 }, { g: "Gr 6", p50: 224, p90: 239 }, { g: "Gr 7", p50: 227, p90: 242 }, { g: "Gr 8", p50: 230, p90: 245 }];
+    const student = 241;
+    return (
+      <div style={{ background: "rgba(56,189,248,0.06)", border: "1px solid rgba(56,189,248,0.18)", borderRadius: 12, padding: 18, marginTop: 16 }}>
+        <div style={{ fontSize: 11, color: "#38bdf8", marginBottom: 4, textTransform: "uppercase", letterSpacing: 1, fontFamily: "sans-serif" }}>Acceleration Readiness — Sample 5th Grader (RIT 241)</div>
+        <div style={{ fontSize: 11, color: "#6b7280", marginBottom: 14, fontFamily: "sans-serif" }}>Pink line = student RIT (241) — exceeds 90th %ile norm through Grade 7</div>
+        {grades.map(row => (
+          <div key={row.g} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+            <div style={{ width: 34, fontSize: 10, color: "#9ca3af", fontFamily: "sans-serif" }}>{row.g}</div>
+            <div style={{ flex: 1, position: "relative", height: 18, background: "rgba(255,255,255,0.05)", borderRadius: 4 }}>
+              <div style={{ position: "absolute", left: `${((row.p50 - 200) / 60) * 100}%`, top: 2, bottom: 2, width: `${((row.p90 - row.p50) / 60) * 100}%`, background: "rgba(96,165,250,0.3)", borderRadius: 2 }} />
+              <div style={{ position: "absolute", left: `${((student - 200) / 60) * 100}%`, top: 0, bottom: 0, width: 2, background: "#f472b6", borderRadius: 1 }} />
+            </div>
+            <div style={{ width: 56, fontSize: 10, color: "#6b7280", fontFamily: "sans-serif" }}>{row.p50}–{row.p90}</div>
+          </div>
+        ))}
+        <div style={{ display: "flex", gap: 14, marginTop: 8 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 5 }}><div style={{ width: 12, height: 7, background: "rgba(96,165,250,0.3)", borderRadius: 1 }} /><span style={{ fontSize: 9, color: "#6b7280", fontFamily: "sans-serif" }}>50th–90th %ile</span></div>
+          <div style={{ display: "flex", alignItems: "center", gap: 5 }}><div style={{ width: 2, height: 12, background: "#f472b6", borderRadius: 1 }} /><span style={{ fontSize: 9, color: "#6b7280", fontFamily: "sans-serif" }}>Student RIT (241)</span></div>
+        </div>
+      </div>
+    );
+  },
+  giftedspread: () => (
+    <div style={{ background: "rgba(56,189,248,0.06)", border: "1px solid rgba(56,189,248,0.18)", borderRadius: 12, padding: 18, marginTop: 16 }}>
+      <div style={{ fontSize: 11, color: "#38bdf8", marginBottom: 14, textTransform: "uppercase", letterSpacing: 1, fontFamily: "sans-serif" }}>RIT Spread in a 90th+ Classroom (Sample 5th Grade)</div>
+      {[{ n: "Aaliya", r: 248, m: 236, c: "#f472b6" }, { n: "Jordan", r: 241, m: 244, c: "#a78bfa" }, { n: "Priya", r: 239, m: 239, c: "#38bdf8" }, { n: "Marcus", r: 235, m: 233, c: "#4ade80" }, { n: "Dev", r: 233, m: 240, c: "#fbbf24" }].map(s => (
+        <div key={s.n} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 10 }}>
+          <div style={{ width: 48, fontSize: 11, color: "#9ca3af", fontFamily: "sans-serif" }}>{s.n}</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 3 }}>
+              <div style={{ width: 30, fontSize: 9, color: "#6b7280", fontFamily: "sans-serif" }}>Read</div>
+              <div style={{ flex: 1, background: "rgba(255,255,255,0.05)", borderRadius: 3, height: 9 }}>
+                <div style={{ width: `${Math.min(((s.r - 225) / 28) * 100, 100)}%`, height: "100%", background: s.c, borderRadius: 3, opacity: 0.85 }} />
+              </div>
+              <div style={{ width: 26, fontSize: 10, color: s.c, fontFamily: "sans-serif", fontWeight: "bold" }}>{s.r}</div>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+              <div style={{ width: 30, fontSize: 9, color: "#6b7280", fontFamily: "sans-serif" }}>Math</div>
+              <div style={{ flex: 1, background: "rgba(255,255,255,0.05)", borderRadius: 3, height: 9 }}>
+                <div style={{ width: `${Math.min(((s.m - 225) / 28) * 100, 100)}%`, height: "100%", background: s.c, borderRadius: 3, opacity: 0.4 }} />
+              </div>
+              <div style={{ width: 26, fontSize: 10, color: "#6b7280", fontFamily: "sans-serif" }}>{s.m}</div>
+            </div>
+          </div>
+        </div>
+      ))}
+      <div style={{ fontSize: 10, color: "#6b7280", marginTop: 6, fontFamily: "sans-serif" }}>All scores above 90th %ile nationally — yet a 15-point spread remains within this class</div>
+    </div>
+  ),
+  depthcomplexity: () => (
+    <div style={{ background: "rgba(56,189,248,0.06)", border: "1px solid rgba(56,189,248,0.18)", borderRadius: 12, padding: 18, marginTop: 16 }}>
+      <div style={{ fontSize: 11, color: "#38bdf8", marginBottom: 14, textTransform: "uppercase", letterSpacing: 1, fontFamily: "sans-serif" }}>Bloom's Taxonomy — Target the Top for Gifted Learners</div>
+      {[{ l: "Create", d: "Design, build, produce, invent", c: "#f472b6", p: 98 }, { l: "Evaluate", d: "Judge, critique, justify, defend", c: "#a78bfa", p: 82 }, { l: "Analyze", d: "Compare, distinguish, examine", c: "#38bdf8", p: 64 }, { l: "Apply", d: "Use, implement, solve", c: "#4ade80", p: 46 }, { l: "Understand", d: "Explain, summarize, classify", c: "#fbbf24", p: 30 }, { l: "Remember", d: "Recall, list, recognize", c: "#9ca3af", p: 16 }].map(b => (
+        <div key={b.l} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+          <div style={{ width: 64, fontSize: 11, color: b.c, fontFamily: "sans-serif", fontWeight: "bold" }}>{b.l}</div>
+          <div style={{ flex: 1, background: "rgba(255,255,255,0.05)", borderRadius: 4, height: 14 }}>
+            <div style={{ width: `${b.p}%`, height: "100%", background: b.c, borderRadius: 4, opacity: 0.7 }} />
+          </div>
+          <div style={{ width: 140, fontSize: 10, color: "#6b7280", fontFamily: "sans-serif" }}>{b.d}</div>
+        </div>
+      ))}
+      <div style={{ fontSize: 10, color: "#38bdf8", marginTop: 8, fontFamily: "sans-serif" }}>→ Gifted instruction should live in the top three levels (Analyze, Evaluate, Create)</div>
+    </div>
+  ),
+  giftedgrowth: () => (
+    <div style={{ background: "rgba(56,189,248,0.06)", border: "1px solid rgba(56,189,248,0.18)", borderRadius: 12, padding: 18, marginTop: 16 }}>
+      <div style={{ fontSize: 11, color: "#38bdf8", marginBottom: 14, textTransform: "uppercase", letterSpacing: 1, fontFamily: "sans-serif" }}>RIT Growth Timeline — Gifted Student (Reading, Grades 3–5)</div>
+      <div style={{ display: "flex", gap: 0, marginBottom: 4 }}>
+        {[{ s: "Fall Gr3", r: 224 }, { s: "Spr Gr3", r: 228 }, { s: "Fall Gr4", r: 232 }, { s: "Spr Gr4", r: 235 }, { s: "Fall Gr5", r: 238 }, { s: "Spr Gr5", r: 242 }].map((pt, i, arr) => {
+          const h = ((pt.r - 218) / 28) * 64;
+          return (
+            <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: "center", position: "relative", height: 80 }}>
+              <div style={{ position: "absolute", bottom: h + 4, width: 10, height: 10, borderRadius: "50%", background: "#38bdf8", zIndex: 2 }} />
+              <div style={{ position: "absolute", bottom: 0, left: "50%", transform: "translateX(-50%)", fontSize: 8, color: "#6b7280", textAlign: "center", fontFamily: "sans-serif", lineHeight: 1.2 }}>{pt.s}<br /><strong style={{ color: "#38bdf8" }}>{pt.r}</strong></div>
+            </div>
+          );
+        })}
+      </div>
+      <div style={{ display: "flex", gap: 8, marginTop: 8 }}>
+        <div style={{ flex: 1, background: "rgba(74,222,128,0.08)", border: "1px solid rgba(74,222,128,0.25)", borderRadius: 8, padding: 10 }}>
+          <div style={{ fontSize: 11, color: "#4ade80", fontWeight: "bold", fontFamily: "sans-serif" }}>✓ Healthy Growth</div>
+          <div style={{ fontSize: 10, color: "#6b7280", marginTop: 3, fontFamily: "sans-serif" }}>3–4 RIT points/year — steady growth even above 90th %ile</div>
+        </div>
+        <div style={{ flex: 1, background: "rgba(239,68,68,0.08)", border: "1px solid rgba(239,68,68,0.25)", borderRadius: 8, padding: 10 }}>
+          <div style={{ fontSize: 11, color: "#ef4444", fontWeight: "bold", fontFamily: "sans-serif" }}>⚠️ Flat Line = Red Flag</div>
+          <div style={{ fontSize: 10, color: "#6b7280", marginTop: 3, fontFamily: "sans-serif" }}>Same RIT across seasons = not enough challenge</div>
+        </div>
+      </div>
+    </div>
+  ),
+  resources: () => (
+    <div style={{ background: "rgba(56,189,248,0.06)", border: "1px solid rgba(56,189,248,0.18)", borderRadius: 12, padding: 18, marginTop: 16 }}>
+      <div style={{ fontSize: 11, color: "#38bdf8", marginBottom: 14, textTransform: "uppercase", letterSpacing: 1, fontFamily: "sans-serif" }}>Gifted Instruction Resource Matrix</div>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+        {[{ s: "📖 Reading/ELA", t: ["Junior Great Books", "Socratic Seminars Intl.", "William & Mary LA"], c: "#a78bfa" }, { s: "🔢 Math", t: ["Art of Problem Solving", "Beast Academy (2–5)", "MATHCOUNTS / AMC"], c: "#38bdf8" }, { s: "🔬 Science", t: ["Science Olympiad", "STEM challenge banks", "National Science Bowl"], c: "#4ade80" }, { s: "🌐 Humanities", t: ["Facing History", "Library of Congress", "Primary Source sets"], c: "#fbbf24" }].map(r => (
+          <div key={r.s} style={{ background: "rgba(255,255,255,0.04)", borderRadius: 8, padding: 12, borderLeft: `3px solid ${r.c}` }}>
+            <div style={{ fontSize: 11, fontWeight: "bold", color: "#f3f4f6", marginBottom: 6, fontFamily: "sans-serif" }}>{r.s}</div>
+            {r.t.map(t => <div key={t} style={{ fontSize: 10, color: "#9ca3af", marginBottom: 2, fontFamily: "sans-serif" }}>• {t}</div>)}
+          </div>
+        ))}
+      </div>
+    </div>
+  ),
+};
+
+const placeholderVisuals = { studentreport: null, classreport: null, goalmath: null, continuum: null, tiered: null, intervention: null };
+function getVisual(key) {
+  const Comp = V[key];
+  if (Comp) return <Comp />;
+  return null;
+}
+
+function parseMarkdown(text) {
+  return text.split("\n").map((line, i) => {
+    if (line.startsWith("• ")) {
+      const html = line.slice(2).replace(/\*\*(.*?)\*\*/g, "<strong style='color:#f9fafb'>$1</strong>");
+      return <div key={i} style={{ display: "flex", gap: 8, marginTop: 5, paddingLeft: 6 }}>
+        <span style={{ color: "#4b5563", flexShrink: 0, marginTop: 3, fontSize: 10 }}>●</span>
+        <span style={{ color: "#d1d5db", lineHeight: 1.7, fontFamily: "sans-serif", fontSize: 14 }} dangerouslySetInnerHTML={{ __html: html }} />
+      </div>;
+    }
+    const html = line.replace(/\*\*(.*?)\*\*/g, "<strong style='color:#f9fafb'>$1</strong>");
+    return line.trim()
+      ? <p key={i} style={{ color: "#d1d5db", lineHeight: 1.75, marginTop: 6, fontFamily: "sans-serif", fontSize: 14 }} dangerouslySetInnerHTML={{ __html: html }} />
+      : <div key={i} style={{ height: 6 }} />;
+  });
+}
+
+const takeaways = {
+  "0-0": "MAP is about growth over time, not just a snapshot. Share this growth-focused perspective with students and families.",
+  "0-1": "Post grade-level RIT ranges as a reference. Help students understand they're on a growth journey, not a percentage scale.",
+  "0-2": "For your school, the 90th percentile mark is the floor, not the ceiling. Use it as a starting point, not a destination.",
+  "1-0": "Always check Standard Error before big decisions. Scores of 238 and 241 are essentially the same within the margin of error.",
+  "1-1": "In a gifted classroom, your histogram will look very different from national norms — that's expected and instructionally useful.",
+  "1-2": "For gifted classrooms, the 'Coasting' quadrant (high achievement, low growth) is your most important monitoring priority.",
+  "2-0": "Even students with very high overall RIT scores can have relative weaknesses in specific goal areas — always check sub-scores.",
+  "2-1": "Use above-grade sub-score data to identify gifted students who are ready for single-subject acceleration decisions.",
+  "2-2": "For gifted learners, use the Learning Continuum at RIT ranges 2–3 grades above their current level for instructional planning.",
+  "3-0": "Update your groups every 4–6 weeks. Even within a gifted cohort, students grow at different rates across subjects.",
+  "3-1": "The goal of tiering is equity, not sorting. All students deserve access to rich, challenging content — differentiated by depth.",
+  "3-2": "For gifted families, frame the RIT conversation around growth and challenge, not just the high score they already expect.",
+  "4-0": "Shift your lens entirely: grade-level norms are irrelevant targets. Each student's own prior RIT score is your true baseline.",
+  "4-1": "Use the RIT-to-grade-norm comparison as your formal documentation tool when advocating for subject acceleration placements.",
+  "4-2": "Never treat all 90th+ students as the same group. The 15-point RIT spread in your class demands real, subject-specific differentiation.",
+  "4-3": "Compacting must replace — not add to — standard work. Gifted students deserve depth and complexity, not extra worksheets.",
+  "4-4": "Flat RIT growth in a gifted student is an instructional urgency. Investigate and adjust before the next testing window.",
+  "4-5": "Keep your gifted resource toolkit visible. Pair MAP RIT data with rich, above-grade resources every planning cycle.",
+};
+
+
+function App() {
+  const [activeModule, setActiveModule] = useState(0);
+  const [activeLesson, setActiveLesson] = useState(0);
+  const [completedLessons, setCompletedLessons] = useState({});
+  const [quizState, setQuizState] = useState({ current: 0, selected: null, answered: false, score: 0, done: false });
+  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const contentRef = useRef(null);
+
+  const mod = modules[activeModule];
+  const lesson = mod.lessons[activeLesson];
+  const totalLessons = modules.filter(m => !m.isQuiz).reduce((s, m) => s + m.lessons.length, 0);
+  const completedCount = Object.keys(completedLessons).length;
+  const progress = Math.round((completedCount / totalLessons) * 100);
+
+  useEffect(() => { if (contentRef.current) contentRef.current.scrollTop = 0; }, [activeModule, activeLesson]);
+
+  const markComplete = () => {
+    const key = `${activeModule}-${activeLesson}`;
+    setCompletedLessons(prev => ({ ...prev, [key]: true }));
+    if (activeLesson < mod.lessons.length - 1) setActiveLesson(l => l + 1);
+    else if (activeModule < modules.length - 2) { setActiveModule(m => m + 1); setActiveLesson(0); }
+    else setActiveModule(modules.length - 1);
+  };
+
+  const handleQuizAnswer = (idx) => {
+    if (quizState.answered) return;
+    const correct = idx === quizQuestions[quizState.current].answer;
+    setQuizState(prev => ({ ...prev, selected: idx, answered: true, score: correct ? prev.score + 1 : prev.score }));
+  };
+
+  const nextQ = () => {
+    if (quizState.current + 1 >= quizQuestions.length) setQuizState(prev => ({ ...prev, done: true }));
+    else setQuizState(prev => ({ ...prev, current: prev.current + 1, selected: null, answered: false }));
+  };
+
+  const isCompleted = (mi, li) => completedLessons[`${mi}-${li}`];
+
+  return (
+    <div style={{ fontFamily: "Georgia, serif", background: "#0c0e15", minHeight: "100vh", display: "flex", flexDirection: "column", color: "#e5e7eb" }}>
+
+      {/* Header */}
+      <header style={{ background: "#080a10", borderBottom: "1px solid #1a1f2e", padding: "13px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <button onClick={() => setSidebarOpen(o => !o)} style={{ background: "none", border: "none", color: "#9ca3af", fontSize: 18, cursor: "pointer", padding: 4 }}>☰</button>
+          <div>
+            <div style={{ fontSize: 17, fontWeight: "bold", color: "#f9fafb", letterSpacing: "-0.3px" }}>MAP Score Mastery</div>
+            <div style={{ fontSize: 11, color: "#6b7280", fontFamily: "sans-serif" }}>Professional Learning for Educators</div>
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <div style={{ fontFamily: "sans-serif", fontSize: 11, color: "#9ca3af" }}>{completedCount}/{totalLessons} lessons</div>
+          <div style={{ width: 90, height: 5, background: "#1f2937", borderRadius: 3, overflow: "hidden" }}>
+            <div style={{ width: `${progress}%`, height: "100%", background: "linear-gradient(90deg, #2dd4a7, #38bdf8, #f472b6)", borderRadius: 3, transition: "width 0.5s" }} />
+          </div>
+          <div style={{ fontFamily: "sans-serif", fontSize: 11, color: "#f3f4f6", fontWeight: "bold" }}>{progress}%</div>
+        </div>
+      </header>
+
+      <div style={{ display: "flex", flex: 1, overflow: "hidden", minHeight: 0 }}>
+
+        {/* Sidebar */}
+        {sidebarOpen && (
+          <aside style={{ width: 262, background: "#080a10", borderRight: "1px solid #1a1f2e", overflowY: "auto", flexShrink: 0 }}>
+            {modules.map((m, mi) => (
+              <div key={m.id}>
+                <div onClick={() => { setActiveModule(mi); if (!m.isQuiz) setActiveLesson(0); }}
+                  style={{ padding: "12px 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 10, background: activeModule === mi ? "rgba(255,255,255,0.04)" : "transparent", borderLeft: activeModule === mi ? `3px solid ${m.accent}` : "3px solid transparent" }}>
+                  <span style={{ fontSize: 16 }}>{m.icon}</span>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                      <div style={{ fontSize: 12, fontWeight: "bold", color: activeModule === mi ? "#f3f4f6" : "#9ca3af", lineHeight: 1.3 }}>{m.title}</div>
+                      {m.badge && <span style={{ fontSize: 7, background: m.accent, color: "#000", borderRadius: 3, padding: "1px 5px", fontFamily: "sans-serif", fontWeight: "bold", letterSpacing: 0.5 }}>{m.badge}</span>}
+                    </div>
+                    <div style={{ fontSize: 10, color: "#4b5563", fontFamily: "sans-serif" }}>{m.subtitle}</div>
+                  </div>
+                </div>
+                {activeModule === mi && !m.isQuiz && m.lessons.map((l, li) => (
+                  <div key={li} onClick={() => setActiveLesson(li)}
+                    style={{ padding: "7px 12px 7px 40px", cursor: "pointer", display: "flex", alignItems: "center", gap: 8, background: activeLesson === li ? "rgba(255,255,255,0.03)" : "transparent", borderLeft: activeLesson === li ? `3px solid ${m.accent}40` : "3px solid transparent" }}>
+                    <div style={{ width: 16, height: 16, borderRadius: "50%", flexShrink: 0, fontSize: 8, display: "flex", alignItems: "center", justifyContent: "center", background: isCompleted(mi, li) ? m.accent : "rgba(255,255,255,0.07)", color: isCompleted(mi, li) ? "#000" : "#9ca3af", fontFamily: "sans-serif", fontWeight: "bold" }}>
+                      {isCompleted(mi, li) ? "✓" : li + 1}
+                    </div>
+                    <div style={{ fontSize: 11, color: activeLesson === li ? "#e5e7eb" : "#6b7280", lineHeight: 1.3, fontFamily: "sans-serif" }}>{l.title}</div>
+                  </div>
+                ))}
+              </div>
+            ))}
+          </aside>
+        )}
+
+        {/* Main */}
+        <main ref={contentRef} style={{ flex: 1, overflowY: "auto", padding: "26px 30px 40px", maxWidth: 840 }}>
+
+          {mod.isQuiz ? (
+            <div>
+              <div style={{ marginBottom: 22 }}>
+                <div style={{ fontSize: 24, fontWeight: "bold", color: "#f9fafb", marginBottom: 4 }}>🧪 Practice Scenarios</div>
+                <div style={{ color: "#6b7280", fontFamily: "sans-serif", fontSize: 13 }}>Realistic classroom scenarios including gifted contexts</div>
+              </div>
+              {quizState.done ? (
+                <div style={{ background: "#080a10", border: "1px solid #1a1f2e", borderRadius: 16, padding: 36, textAlign: "center" }}>
+                  <div style={{ fontSize: 52, marginBottom: 14 }}>{quizState.score >= 5 ? "🎉" : quizState.score >= 3 ? "👍" : "📚"}</div>
+                  <div style={{ fontSize: 28, fontWeight: "bold", color: "#f9fafb", marginBottom: 8, fontFamily: "sans-serif" }}>{quizState.score} / {quizQuestions.length}</div>
+                  <div style={{ color: "#9ca3af", fontFamily: "sans-serif", marginBottom: 22 }}>
+                    {quizState.score === quizQuestions.length ? "Perfect! You're ready to use MAP data expertly in your gifted classroom." : quizState.score >= 4 ? "Great work! Review the lessons you missed and try again." : "Keep studying — revisit the modules and try again."}
+                  </div>
+                  <button onClick={() => setQuizState({ current: 0, selected: null, answered: false, score: 0, done: false })} style={{ background: "#be185d", color: "#fff", border: "none", padding: "10px 24px", borderRadius: 8, fontSize: 13, cursor: "pointer", fontFamily: "sans-serif" }}>Try Again</button>
+                </div>
+              ) : (
+                <div>
+                  <div style={{ fontFamily: "sans-serif", fontSize: 12, color: "#6b7280", marginBottom: 12 }}>Question {quizState.current + 1} of {quizQuestions.length}</div>
+                  <div style={{ background: "#080a10", border: "1px solid #1a1f2e", borderRadius: 16, padding: 24, marginBottom: 12 }}>
+                    <div style={{ fontSize: 16, color: "#f3f4f6", lineHeight: 1.65, marginBottom: 20, fontFamily: "sans-serif" }}>{quizQuestions[quizState.current].q}</div>
+                    {quizQuestions[quizState.current].options.map((opt, i) => {
+                      const isCorrect = i === quizQuestions[quizState.current].answer;
+                      const isSel = quizState.selected === i;
+                      let bg = "rgba(255,255,255,0.02)", bd = "#1f2937";
+                      if (quizState.answered) { if (isCorrect) { bg = "rgba(74,222,128,0.07)"; bd = "#4ade80"; } else if (isSel) { bg = "rgba(239,68,68,0.07)"; bd = "#ef4444"; } }
+                      else if (isSel) { bg = "rgba(96,165,250,0.07)"; bd = "#60a5fa"; }
+                      return (
+                        <div key={i} onClick={() => handleQuizAnswer(i)} style={{ background: bg, border: `1px solid ${bd}`, borderRadius: 10, padding: "12px 14px", marginBottom: 8, cursor: quizState.answered ? "default" : "pointer", display: "flex", gap: 10, alignItems: "flex-start" }}>
+                          <div style={{ width: 20, height: 20, borderRadius: "50%", background: bd === "#1f2937" ? "rgba(255,255,255,0.07)" : bd, color: bd === "#1f2937" ? "#9ca3af" : "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, flexShrink: 0, fontFamily: "sans-serif", fontWeight: "bold" }}>{String.fromCharCode(65 + i)}</div>
+                          <div style={{ color: "#d1d5db", fontFamily: "sans-serif", lineHeight: 1.5, fontSize: 14 }}>{opt}</div>
+                        </div>
+                      );
+                    })}
+                    {quizState.answered && (
+                      <div style={{ background: quizState.selected === quizQuestions[quizState.current].answer ? "rgba(74,222,128,0.05)" : "rgba(239,68,68,0.05)", border: `1px solid ${quizState.selected === quizQuestions[quizState.current].answer ? "#4ade8030" : "#ef444430"}`, borderRadius: 10, padding: 14, marginTop: 12 }}>
+                        <div style={{ fontSize: 12, fontWeight: "bold", color: quizState.selected === quizQuestions[quizState.current].answer ? "#4ade80" : "#ef4444", marginBottom: 5, fontFamily: "sans-serif" }}>
+                          {quizState.selected === quizQuestions[quizState.current].answer ? "✓ Correct!" : "✗ Not quite"}
+                        </div>
+                        <div style={{ color: "#9ca3af", fontFamily: "sans-serif", fontSize: 13, lineHeight: 1.65 }}>{quizQuestions[quizState.current].explanation}</div>
+                      </div>
+                    )}
+                  </div>
+                  {quizState.answered && (
+                    <button onClick={nextQ} style={{ background: "#be185d", color: "#fff", border: "none", padding: "10px 22px", borderRadius: 8, fontSize: 13, cursor: "pointer", fontFamily: "sans-serif" }}>
+                      {quizState.current + 1 >= quizQuestions.length ? "See Results →" : "Next Question →"}
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+
+          ) : lesson ? (
+            <div>
+              {/* Gifted banner */}
+              {mod.id === "gifted" && (
+                <div style={{ background: "linear-gradient(135deg, rgba(14,61,107,0.85), rgba(56,189,248,0.12))", border: "1px solid rgba(56,189,248,0.28)", borderRadius: 12, padding: "12px 16px", marginBottom: 20, display: "flex", alignItems: "center", gap: 12 }}>
+                  <span style={{ fontSize: 22 }}>⭐</span>
+                  <div>
+                    <div style={{ fontSize: 11, color: "#38bdf8", fontWeight: "bold", fontFamily: "sans-serif", textTransform: "uppercase", letterSpacing: 1 }}>Tailored for Your School</div>
+                    <div style={{ fontSize: 12, color: "#7dd3fc", fontFamily: "sans-serif", marginTop: 2 }}>This module is specifically designed for classrooms where every student scores at the 90th percentile or above on MAP assessments.</div>
+                  </div>
+                </div>
+              )}
+
+              {/* Module header */}
+              <div style={{ display: "flex", gap: 12, alignItems: "flex-start", marginBottom: 20 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 12, background: `${mod.color}90`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 20, flexShrink: 0 }}>{mod.icon}</div>
+                <div>
+                  <div style={{ fontSize: 11, color: mod.accent, fontFamily: "sans-serif", textTransform: "uppercase", letterSpacing: 1, marginBottom: 3 }}>{mod.title}</div>
+                  <div style={{ fontSize: 22, fontWeight: "bold", color: "#f9fafb", lineHeight: 1.2 }}>{lesson.title}</div>
+                </div>
+              </div>
+
+              {/* Lesson tabs */}
+              <div style={{ display: "flex", gap: 5, marginBottom: 22, flexWrap: "wrap" }}>
+                {mod.lessons.map((l, li) => (
+                  <button key={li} onClick={() => setActiveLesson(li)} style={{ padding: "4px 11px", borderRadius: 18, border: "none", cursor: "pointer", fontFamily: "sans-serif", fontSize: 11, background: activeLesson === li ? mod.accent : isCompleted(activeModule, li) ? `${mod.color}50` : "rgba(255,255,255,0.06)", color: activeLesson === li ? "#000" : isCompleted(activeModule, li) ? mod.accent : "#9ca3af", fontWeight: activeLesson === li ? "bold" : "normal" }}>
+                    {isCompleted(activeModule, li) ? "✓ " : ""}{li + 1}. {l.title.split(" ").slice(0, 3).join(" ")}
+                  </button>
+                ))}
+              </div>
+
+              {/* Content */}
+              <div style={{ background: "#080a10", border: "1px solid #1a1f2e", borderRadius: 16, padding: 26, marginBottom: 18 }}>
+                {parseMarkdown(lesson.content)}
+                {lesson.visual && getVisual(lesson.visual)}
+              </div>
+
+              {/* Takeaway */}
+              <div style={{ background: `${mod.color}18`, border: `1px solid ${mod.accent}30`, borderRadius: 12, padding: 16, marginBottom: 20 }}>
+                <div style={{ fontSize: 11, fontFamily: "sans-serif", color: mod.accent, marginBottom: 4, textTransform: "uppercase", letterSpacing: 1 }}>💡 Instructional Takeaway</div>
+                <div style={{ color: "#d1d5db", fontFamily: "sans-serif", fontSize: 13, lineHeight: 1.7 }}>{takeaways[`${activeModule}-${activeLesson}`] || "Use this data to guide targeted instructional decisions for your students."}</div>
+              </div>
+
+              {/* Nav */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <button
+                  onClick={() => activeLesson > 0 ? setActiveLesson(l => l - 1) : activeModule > 0 ? (setActiveModule(m => m - 1), setActiveLesson(modules[activeModule - 1].lessons.length - 1)) : null}
+                  style={{ background: "rgba(255,255,255,0.06)", color: "#9ca3af", border: "none", padding: "9px 16px", borderRadius: 8, cursor: "pointer", fontFamily: "sans-serif", fontSize: 12 }}
+                >← Previous</button>
+                <button
+                  onClick={markComplete}
+                  style={{ background: mod.color, color: "#fff", border: "none", padding: "10px 22px", borderRadius: 8, cursor: "pointer", fontFamily: "sans-serif", fontSize: 13, fontWeight: "bold" }}
+                >
+                  {isCompleted(activeModule, activeLesson) ? "Next →" : "Mark Complete & Continue →"}
+                </button>
+              </div>
+            </div>
+          ) : null}
+        </main>
+      </div>
+    </div>
+  );
+}
+
+
+const rootEl = document.getElementById('root');
+const root = ReactDOM.createRoot(rootEl);
+root.render(<App />);
+  </script>
+</body>
+</html>
